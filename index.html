@@ -1,0 +1,1101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes">
+    <title>SMART RACK · Pick-to-Light Mirror</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        body {
+            background: #f4f7fc;
+            color: #1e293b;
+            padding: 1.5rem;
+            min-height: 100vh;
+            transition: background 0.2s, color 0.2s;
+        }
+
+        body.dark {
+            background: #0f172a;
+            color: #e2e8f0;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* header */
+        .dashboard-header {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 2rem;
+            gap: 1rem;
+        }
+
+        .dashboard-header h1 {
+            font-weight: 600;
+            font-size: 1.8rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .dashboard-header h1 i {
+            color: #3b82f6;
+        }
+
+        .header-actions {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 0.8rem;
+            position: relative;
+        }
+
+        .search-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+            background: white;
+            border-radius: 40px;
+            padding: 0.2rem 0.2rem 0.2rem 1.2rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+            border: 1px solid #e2e8f0;
+            transition: 0.2s;
+            min-width: 220px;
+        }
+
+        body.dark .search-wrapper {
+            background: #1e293b;
+            border-color: #334155;
+        }
+
+        .search-wrapper:focus-within {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+        }
+
+        .search-wrapper i {
+            color: #94a3b8;
+            font-size: 0.9rem;
+        }
+
+        .search-wrapper input {
+            border: none;
+            padding: 0.7rem 0.5rem;
+            font-size: 0.95rem;
+            background: transparent;
+            width: 180px;
+            outline: none;
+            color: #1e293b;
+        }
+
+        body.dark .search-wrapper input {
+            color: #e2e8f0;
+        }
+
+        .search-wrapper input::placeholder {
+            color: #94a3b8;
+        }
+
+        /* autocomplete dropdown */
+        .autocomplete-list {
+            position: absolute;
+            top: calc(100% + 6px);
+            left: 0;
+            right: 0;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.12);
+            border: 1px solid #e9edf2;
+            max-height: 260px;
+            overflow-y: auto;
+            z-index: 100;
+            display: none;
+            padding: 0.4rem 0;
+        }
+
+        body.dark .autocomplete-list {
+            background: #1e293b;
+            border-color: #334155;
+        }
+
+        .autocomplete-list.show {
+            display: block;
+        }
+
+        .autocomplete-item {
+            padding: 0.6rem 1.2rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: 0.1s;
+            color: #1e293b;
+        }
+
+        body.dark .autocomplete-item {
+            color: #e2e8f0;
+        }
+
+        .autocomplete-item:hover {
+            background: #f1f5f9;
+        }
+
+        body.dark .autocomplete-item:hover {
+            background: #2d3a4f;
+        }
+
+        .autocomplete-item .match-highlight {
+            font-weight: 600;
+            color: #3b82f6;
+        }
+
+        body.dark .autocomplete-item .match-highlight {
+            color: #60a5fa;
+        }
+
+        .autocomplete-item .item-cat {
+            font-size: 0.65rem;
+            background: #eef2f6;
+            padding: 0.1rem 0.6rem;
+            border-radius: 30px;
+            color: #475569;
+            margin-left: auto;
+        }
+
+        body.dark .autocomplete-item .item-cat {
+            background: #2d3a4f;
+            color: #b9c7da;
+        }
+
+        .btn {
+            padding: 0.5rem 1.2rem;
+            border-radius: 40px;
+            border: none;
+            font-weight: 500;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: 0.15s;
+            font-size: 0.85rem;
+        }
+
+        .btn-primary {
+            background: #3b82f6;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #2563eb;
+            transform: scale(1.02);
+        }
+        
+        .btn-primary:disabled {
+            background: #94a3b8;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 1px solid #cbd5e1;
+            color: #475569;
+        }
+
+        body.dark .btn-outline {
+            border-color: #475569;
+            color: #94a3b8;
+        }
+
+        .btn-sm {
+            padding: 0.25rem 0.7rem;
+            font-size: 0.75rem;
+        }
+
+        .icon-btn {
+            background: #e2e8f0;
+            border: none;
+            border-radius: 30px;
+            width: 40px;
+            height: 40px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: 0.2s;
+            color: #1e293b;
+        }
+
+        body.dark .icon-btn {
+            background: #334155;
+            color: #cbd5e1;
+        }
+
+        body.dark .icon-btn.toggle-active {
+            color: #facc15;
+        }
+
+        .icon-btn:hover {
+            transform: scale(1.05);
+        }
+
+        /* rack map */
+        .rack-section {
+            background: white;
+            border-radius: 24px;
+            padding: 1.5rem 1rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02);
+            border: 1px solid #e9edf2;
+            margin-bottom: 2rem;
+            transition: 0.2s;
+        }
+
+        body.dark .rack-section {
+            background: #1e293b;
+            border-color: #334155;
+        }
+
+        .rack-title {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.2rem;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .rack-title h2 {
+            font-weight: 500;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .rack-title .mirror-badge {
+            font-size: 0.75rem;
+            background: #eff6ff;
+            border: 1px solid #bfdbfe;
+            padding: 0.3rem 0.9rem;
+            border-radius: 30px;
+            color: #1e40af;
+            font-weight: 600;
+        }
+
+        body.dark .rack-title .mirror-badge {
+            background: #1e3a5f;
+            border-color: #172554;
+            color: #93c5fd;
+        }
+
+        .rack-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .rack-cell {
+            aspect-ratio: 1 / 0.8;
+            background: #f8fafc;
+            border-radius: 16px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            font-weight: 500;
+            border: 2px solid #e2e8f0;
+            transition: all 0.2s;
+            color: #475569;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+            position: relative;
+        }
+
+        body.dark .rack-cell {
+            background: #2d3a4f;
+            border-color: #475569;
+            color: #cbd5e1;
+        }
+
+        .rack-cell .bin-label {
+            font-size: 0.7rem;
+            opacity: 0.7;
+            margin-top: 4px;
+            text-align: center;
+            max-width: 90%;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .rack-cell.active {
+            border-color: #3b82f6;
+            background: #dbeafe;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+            transform: scale(1.02);
+            color: #1e293b;
+        }
+
+        body.dark .rack-cell.active {
+            background: #1e3a5f;
+            border-color: #60a5fa;
+            box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.3);
+            color: #e2e8f0;
+        }
+
+        .rack-cell .led-indicator {
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: #cbd5e1;
+            margin-bottom: 6px;
+            transition: 0.2s;
+            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .rack-cell.active .led-indicator {
+            background: #3b82f6;
+            box-shadow: 0 0 12px #3b82f6;
+        }
+
+        body.dark .rack-cell.active .led-indicator {
+            background: #60a5fa;
+            box-shadow: 0 0 16px #3b82f6;
+        }
+
+        /* inventory header */
+        .inventory-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 1.5rem 0 1rem;
+            flex-wrap: wrap;
+            gap: 0.8rem;
+        }
+
+        .inventory-header h2 {
+            font-weight: 500;
+            font-size: 1.3rem;
+        }
+
+        .inventory-actions {
+            display: flex;
+            gap: 0.6rem;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .filter-badge {
+            background: #e9edf2;
+            padding: 0.25rem 1rem;
+            border-radius: 40px;
+            font-size: 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-weight: 500;
+        }
+
+        body.dark .filter-badge {
+            background: #2d3a4f;
+        }
+
+        /* items grid */
+        .items-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 1.2rem;
+        }
+
+        .item-card {
+            background: white;
+            border-radius: 20px;
+            padding: 1.2rem;
+            border: 1px solid #e9edf2;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.01);
+            transition: all 0.15s;
+            display: flex;
+            flex-direction: column;
+            gap: 0.7rem;
+            position: relative;
+        }
+
+        body.dark .item-card {
+            background: #1e293b;
+            border-color: #334155;
+        }
+
+        .item-card:hover {
+            border-color: #b9c7da;
+            box-shadow: 0 6px 14px rgba(0, 0, 0, 0.03);
+        }
+
+        .item-name {
+            font-weight: 600;
+            font-size: 1.1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .item-category {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+            background: #eef2f6;
+            padding: 0.2rem 0.6rem;
+            border-radius: 30px;
+            color: #475569;
+        }
+
+        body.dark .item-category {
+            background: #2d3a4f;
+            color: #b9c7da;
+        }
+
+        .item-details {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            font-size: 0.9rem;
+            color: #475569;
+            margin-top: 4px;
+        }
+
+        body.dark .item-details {
+            color: #b9c7da;
+        }
+
+        .item-details span {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .low-stock {
+            color: #b91c1c;
+            font-weight: 600;
+        }
+
+        body.dark .low-stock {
+            color: #f87171;
+        }
+
+        .card-actions {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 0.4rem;
+        }
+
+        .btn-locate {
+            background: #3b82f6;
+            border: none;
+            color: white;
+            padding: 0.4rem 1.1rem;
+            border-radius: 40px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+            transition: 0.15s;
+            border: 1px solid #3b82f6;
+            width: 100%;
+            justify-content: center;
+        }
+
+        .btn-locate:hover {
+            background: #2563eb;
+            transform: scale(1.01);
+        }
+
+        .btn-locate.active {
+            background: #10b981;
+            border-color: #10b981;
+        }
+
+        .no-results {
+            text-align: center;
+            padding: 4rem 0;
+            color: #94a3b8;
+            width: 100%;
+            grid-column: 1 / -1;
+        }
+
+        /* Modal Overlay */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 200;
+            padding: 1rem;
+        }
+
+        .modal-overlay.open {
+            display: flex;
+        }
+
+        .modal {
+            background: white;
+            border-radius: 28px;
+            padding: 2rem;
+            max-width: 500px;
+            width: 100%;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.2);
+        }
+
+        body.dark .modal {
+            background: #1e293b;
+            border: 1px solid #334155;
+            color: #e2e8f0;
+        }
+
+        .modal h3 {
+            font-size: 1.3rem;
+            margin-bottom: 1.2rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .modal .form-group {
+            margin-bottom: 1.2rem;
+        }
+
+        .modal label {
+            display: block;
+            font-weight: 600;
+            font-size: 0.85rem;
+            margin-bottom: 0.4rem;
+        }
+
+        .modal input {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+            font-size: 0.95rem;
+            background: white;
+            transition: 0.2s;
+        }
+
+        body.dark .modal input {
+            background: #0f172a;
+            border-color: #334155;
+            color: #e2e8f0;
+        }
+
+        .modal input:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+        }
+
+        .modal .modal-actions {
+            display: flex;
+            gap: 0.8rem;
+            justify-content: flex-end;
+            margin-top: 1.8rem;
+        }
+
+        .toast-message {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #1e293b;
+            color: white;
+            padding: 0.6rem 1.5rem;
+            border-radius: 60px;
+            font-size: 0.9rem;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+            opacity: 0;
+            transition: 0.3s;
+            pointer-events: none;
+            z-index: 999;
+        }
+
+        .toast-message.show {
+            opacity: 1;
+        }
+
+        body.dark .toast-message {
+            background: #e2e8f0;
+            color: #0f172a;
+        }
+
+        .sync-info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.8rem;
+            color: #64748b;
+        }
+
+        body.dark .sync-info {
+            color: #94a3b8;
+        }
+
+        /* responsive */
+        @media (max-width: 640px) {
+            .dashboard-header h1 {
+                font-size: 1.4rem;
+            }
+            .search-wrapper input {
+                width: 120px;
+            }
+            .rack-grid {
+                max-width: 100%;
+                gap: 8px;
+            }
+            .items-grid {
+                grid-template-columns: 1fr;
+            }
+            .modal {
+                padding: 1.5rem;
+            }
+        }
+
+        .autocomplete-list::-webkit-scrollbar {
+            width: 4px;
+        }
+        .autocomplete-list::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .autocomplete-list::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 10px;
+        }
+        body.dark .autocomplete-list::-webkit-scrollbar-thumb {
+            background: #475569;
+        }
+    </style>
+</head>
+<body>
+    <div class="container" id="app">
+        <div class="toast-message" id="toast"></div>
+
+        <!-- Google Apps Script URL Configuration Modal -->
+        <div class="modal-overlay" :class="{ open: showSettingsModal }" @click.self="closeSettings">
+            <div class="modal">
+                <h3><i class="fas fa-cog"></i> Sync Settings</h3>
+                <div class="form-group" style="margin-top: 1rem;">
+                    <label>Google Apps Script Web App URL</label>
+                    <input v-model="tempScriptUrl" placeholder="https://script.google.com/macros/s/.../exec">
+                    <p style="font-size: 0.72rem; color: #64748b; margin-top: 6px;">
+                        Paste the Web App URL generated from Deploying your Google Apps Script. This URL is saved locally in your browser storage.
+                    </p>
+                </div>
+                <div class="modal-actions">
+                    <button class="btn btn-outline" @click="closeSettings">Cancel</button>
+                    <button class="btn btn-primary" @click="saveSettings">Save URL</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- header -->
+        <header class="dashboard-header">
+            <div>
+                <h1><i class="fas fa-cubes"></i>SMART RACK</h1>
+                <div class="sync-info" style="margin-top: 4px;" v-if="lastSynced">
+                    <i class="fas fa-clock"></i> Last Synced: <span>{{ lastSynced }}</span>
+                </div>
+            </div>
+            <div class="header-actions">
+                <div class="search-wrapper" id="searchWrapper">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="searchInput" placeholder="Search BOM..." @input="onSearchInput" @focus="onSearchFocus" @blur="onSearchBlur" @keydown="onSearchKeydown" aria-label="Search inventory" autocomplete="off">
+                    <div class="autocomplete-list" id="autocompleteList" :class="{ show: showAutocomplete && suggestions.length > 0 }">
+                        <div v-for="(item, idx) in suggestions" :key="item.id" class="autocomplete-item" @mousedown="selectSuggestion(item)">
+                            <i class="fas fa-cube" style="opacity:0.5; font-size:0.7rem;"></i>
+                            <span v-html="highlightMatch(item.name)"></span>
+                            <span class="item-cat">{{ item.category }}</span>
+                            <span style="font-size:0.7rem; opacity:0.6; margin-left:4px;">R{{ item.row }}C{{ item.col }}</span>
+                        </div>
+                    </div>
+                </div>
+                <button class="icon-btn" @click="fetchFromGoogle" :disabled="loading" title="Fetch Latest BOM">
+                    <i class="fas fa-sync" :class="{ 'fa-spin': loading }"></i>
+                </button>
+                <button class="icon-btn" @click="openSettings" title="Settings">
+                    <i class="fas fa-cog"></i>
+                </button>
+                <button class="icon-btn" :class="{ 'toggle-active': darkMode }" @click="toggleDark" aria-label="Toggle dark mode">
+                    <i class="fas fa-moon"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- Rack map -->
+        <section class="rack-section">
+            <div class="rack-title">
+                <h2><i class="fas fa-th"></i> Storage Rack · 10×3 Map</h2>
+                <span class="mirror-badge"><i class="fas fa-cloud"></i> Google Sheets Mirror</span>
+            </div>
+            <div class="rack-grid" id="rackGrid">
+                <div v-for="(cell, idx) in rackCells" :key="idx" class="rack-cell" :class="{ active: cell.active }" :data-row="cell.row" :data-col="cell.col">
+                    <div class="led-indicator"></div>
+                    <span>R{{ cell.row }}C{{ cell.col }}</span>
+                    <span class="bin-label" v-if="cell.itemName" :title="cell.itemName">{{ cell.itemName }}</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- inventory -->
+        <div class="inventory-header">
+            <h2><i class="fas fa-boxes"></i> Inventory BOM List</h2>
+            <div class="inventory-actions">
+                <span class="filter-badge" id="itemCount">{{ filteredItems.length }} items</span>
+            </div>
+        </div>
+
+        <div class="items-grid" id="itemsGrid">
+            <div v-for="item in filteredItems" :key="item.id" class="item-card">
+                <div class="item-name">
+                    {{ item.name }}
+                    <span class="item-category">{{ item.category || 'Uncategorized' }}</span>
+                </div>
+                <div class="item-details">
+                    <span><i class="fas fa-hashtag"></i> Qty: {{ item.quantity }}</span>
+                    <span><i class="fas fa-map-pin"></i> R{{ item.row }}C{{ item.col }}</span>
+                    <span v-if="item.quantity < 5" class="low-stock"><i class="fas fa-exclamation-triangle"></i> low</span>
+                </div>
+                <div class="card-actions">
+                    <button class="btn-locate" :class="{ active: item.highlighted }" @click="locateItem(item)">
+                        <i class="fas" :class="item.highlighted ? 'fa-eye' : 'fa-lightbulb'"></i> {{ item.highlighted ? 'Located' : 'Highlight Slot' }}
+                    </button>
+                </div>
+            </div>
+            <div v-if="filteredItems.length === 0" class="no-results">
+                <i class="fas fa-search" style="font-size:2rem; opacity:0.3;"></i>
+                <p v-if="items.length > 0">No matching items found</p>
+                <div v-else>
+                    <p>No inventory loaded yet.</p>
+                    <p style="font-size: 0.85rem; margin-top: 4px; opacity: 0.8;">
+                        Click the <i class="fas fa-cog"></i> settings icon to configure your Google Web App URL, then click the <i class="fas fa-sync"></i> sync button to pull the latest BOM.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
+    <script>
+        (function() {
+            new Vue({
+                el: '#app',
+                data: {
+                    items: [],
+                    searchTerm: '',
+                    darkMode: false,
+                    activeItemId: null,
+                    rackCells: [],
+                    showAutocomplete: false,
+                    suggestions: [],
+                    selectedSuggestionIndex: -1,
+                    
+                    // Sync Configuration Settings
+                    showSettingsModal: false,
+                    googleScriptUrl: '',
+                    tempScriptUrl: '',
+                    lastSynced: '',
+                    loading: false
+                },
+                computed: {
+                    filteredItems() {
+                        const term = this.searchTerm.toLowerCase().trim();
+                        if (!term) return this.items.map(i => ({ ...i }));
+                        return this.items.filter(item =>
+                            item.name.toLowerCase().includes(term) ||
+                            (item.category && item.category.toLowerCase().includes(term))
+                        );
+                    }
+                },
+                watch: {
+                    activeItemId(newId) {
+                        this.rackCells.forEach(cell => cell.active = false);
+                        if (newId !== null) {
+                            const item = this.items.find(i => i.id === newId);
+                            if (item) {
+                                const idx = (item.row - 1) * 3 + (item.col - 1);
+                                if (this.rackCells[idx]) {
+                                    this.rackCells[idx].active = true;
+                                }
+                                this.items.forEach(i => i.highlighted = (i.id === newId));
+                            }
+                        } else {
+                            this.items.forEach(i => i.highlighted = false);
+                        }
+                    },
+                    searchTerm(newVal) {
+                        const term = newVal.toLowerCase().trim();
+                        if (term.length === 0) {
+                            this.suggestions = [];
+                            this.showAutocomplete = false;
+                            return;
+                        }
+                        const matches = this.items.filter(item =>
+                            item.name.toLowerCase().includes(term) ||
+                            (item.category && item.category.toLowerCase().includes(term))
+                        );
+                        this.suggestions = matches.slice(0, 8);
+                        this.showAutocomplete = this.suggestions.length > 0;
+                        this.selectedSuggestionIndex = -1;
+                    },
+                    items: {
+                        deep: true,
+                        handler() {
+                            this.updateRackCells();
+                        }
+                    }
+                },
+                methods: {
+                    // ----- API interaction -----
+                    fetchFromGoogle() {
+                        if (!this.googleScriptUrl) {
+                            this.showToast('⚠️ Google Apps Script URL not configured. Click settings.');
+                            this.openSettings();
+                            return;
+                        }
+                        
+                        this.loading = true;
+                        this.showToast('🔄 Fetching inventory from Google Sheets...');
+                        
+                        fetch(this.googleScriptUrl)
+                            .then(res => {
+                                if (!res.ok) throw new Error('Google Sheets API server error');
+                                return res.json();
+                            })
+                            .then(data => {
+                                // Maps properties to fit model structures (e.g. boxnum, subbox, row, col, quantity, id)
+                                this.items = data.map(item => ({
+                                    id: Number(item.id),
+                                    name: String(item.name || ''),
+                                    category: String(item.category || 'Uncategorized'),
+                                    quantity: Number(item.quantity || 0),
+                                    row: Number(item.row || 1),
+                                    col: Number(item.col || 1),
+                                    boxNum: Number(item.boxnum || item.boxNum || 1),
+                                    subBox: Number(item.slotnum || item.subbox || item.subBox || 1),
+                                    highlighted: false
+                                }));
+                                
+                                const timeStr = new Date().toLocaleString();
+                                this.lastSynced = timeStr;
+                                localStorage.setItem('last_synced_bom_time', timeStr);
+                                localStorage.setItem('cached_bom_items', JSON.stringify(this.items));
+                                
+                                this.updateRackCells();
+                                this.loading = false;
+                                this.showToast(`✅ Successfully synced ${this.items.length} items!`);
+                            })
+                            .catch(err => {
+                                console.error('Fetch inventory failed:', err);
+                                this.loading = false;
+                                this.showToast('⚠️ Sync failed. Verify Apps Script Web App URL and deployment.');
+                            });
+                    },
+
+                    // ----- Settings Modal -----
+                    openSettings() {
+                        this.tempScriptUrl = this.googleScriptUrl;
+                        this.showSettingsModal = true;
+                    },
+                    closeSettings() {
+                        this.showSettingsModal = false;
+                    },
+                    saveSettings() {
+                        let url = this.tempScriptUrl.trim();
+                        if (url && !url.startsWith('http')) {
+                            this.showToast('⚠️ Please enter a valid URL');
+                            return;
+                        }
+                        this.googleScriptUrl = url;
+                        localStorage.setItem('google_sheets_apps_script_url', url);
+                        this.showSettingsModal = false;
+                        this.showToast('💾 Settings saved successfully!');
+                        if (url) {
+                            this.fetchFromGoogle();
+                        }
+                    },
+
+                    // ----- Search -----
+                    onSearchInput(e) {
+                        this.searchTerm = e.target.value;
+                    },
+                    onSearchFocus() {
+                        if (this.searchTerm.trim().length > 0 && this.suggestions.length > 0) {
+                            this.showAutocomplete = true;
+                        }
+                    },
+                    onSearchBlur() {
+                        setTimeout(() => { this.showAutocomplete = false; }, 180);
+                    },
+                    onSearchKeydown(e) {
+                        if (e.key === 'ArrowDown') {
+                            e.preventDefault();
+                            if (this.suggestions.length === 0) return;
+                            this.selectedSuggestionIndex = (this.selectedSuggestionIndex + 1) % this.suggestions.length;
+                            this.scrollSuggestionIntoView();
+                        } else if (e.key === 'ArrowUp') {
+                            e.preventDefault();
+                            if (this.suggestions.length === 0) return;
+                            this.selectedSuggestionIndex = (this.selectedSuggestionIndex - 1 + this.suggestions.length) % this
+                                .suggestions.length;
+                            this.scrollSuggestionIntoView();
+                        } else if (e.key === 'Enter') {
+                            e.preventDefault();
+                            if (this.selectedSuggestionIndex >= 0 && this.selectedSuggestionIndex < this.suggestions
+                                .length) {
+                                this.selectSuggestion(this.suggestions[this.selectedSuggestionIndex]);
+                            } else if (this.suggestions.length > 0) {
+                                this.selectSuggestion(this.suggestions[0]);
+                            }
+                        } else if (e.key === 'Escape') {
+                            this.showAutocomplete = false;
+                            document.getElementById('searchInput').blur();
+                        }
+                    },
+                    scrollSuggestionIntoView() {
+                        const list = document.getElementById('autocompleteList');
+                        if (!list) return;
+                        const items = list.querySelectorAll('.autocomplete-item');
+                        if (this.selectedSuggestionIndex >= 0 && this.selectedSuggestionIndex < items.length) {
+                            items[this.selectedSuggestionIndex].scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+                        }
+                    },
+                    selectSuggestion(item) {
+                        this.searchTerm = item.name;
+                        this.showAutocomplete = false;
+                        document.getElementById('searchInput').value = item.name;
+                        this.$nextTick(() => {
+                            const cards = document.querySelectorAll('.item-card');
+                            for (let card of cards) {
+                                if (card.textContent.includes(item.name)) {
+                                    card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                                    card.style.transition = '0.2s';
+                                    card.style.boxShadow = '0 0 0 3px #3b82f6';
+                                    setTimeout(() => { card.style.boxShadow = ''; }, 1500);
+                                    break;
+                                }
+                            }
+                        });
+                    },
+                    highlightMatch(name) {
+                        const term = this.searchTerm.toLowerCase().trim();
+                        if (!term) return name;
+                        const idx = name.toLowerCase().indexOf(term);
+                        if (idx === -1) return name;
+                        const before = name.substring(0, idx);
+                        const match = name.substring(idx, idx + term.length);
+                        const after = name.substring(idx + term.length);
+                        return `${before}<span class="match-highlight">${match}</span>${after}`;
+                    },
+
+                    // ----- locate -----
+                    locateItem(item) {
+                        if (this.activeItemId === item.id) {
+                            this.activeItemId = null;
+                            return;
+                        }
+                        this.activeItemId = item.id;
+                        this.showToast(`📍 Highlighted Cell: R${item.row}C${item.col}`);
+                    },
+
+                    // ----- Helpers -----
+                    updateRackCells() {
+                        const cells = [];
+                        for (let row = 1; row <= 10; row++) {
+                            for (let col = 1; col <= 3; col++) {
+                                const item = this.items.find(i => i.row === row && i.col === col);
+                                cells.push({
+                                    row,
+                                    col,
+                                    active: false,
+                                    itemName: item ? item.name : '',
+                                });
+                            }
+                        }
+                        this.rackCells = cells;
+                        if (this.activeItemId !== null) {
+                            const item = this.items.find(i => i.id === this.activeItemId);
+                            if (item) {
+                                const idx = (item.row - 1) * 3 + (item.col - 1);
+                                if (this.rackCells[idx]) {
+                                    this.rackCells[idx].active = true;
+                                }
+                            }
+                        }
+                    },
+                    toggleDark() {
+                        this.darkMode = !this.darkMode;
+                        document.body.classList.toggle('dark', this.darkMode);
+                    },
+                    showToast(msg) {
+                        const el = document.getElementById('toast');
+                        if (!el) return;
+                        el.textContent = msg;
+                        el.classList.add('show');
+                        clearTimeout(this._toastTimer);
+                        this._toastTimer = setTimeout(() => el.classList.remove('show'), 2200);
+                    }
+                },
+                mounted() {
+                    // Load script URL from local storage
+                    const storedUrl = localStorage.getItem('google_sheets_apps_script_url');
+                    if (storedUrl) {
+                        this.googleScriptUrl = storedUrl;
+                    }
+                    
+                    // Load cached BOM list to show immediately on page load
+                    const cachedItems = localStorage.getItem('cached_bom_items');
+                    const cachedTime = localStorage.getItem('last_synced_bom_time');
+                    if (cachedItems) {
+                        this.items = JSON.parse(cachedItems);
+                        this.updateRackCells();
+                    }
+                    if (cachedTime) {
+                        this.lastSynced = cachedTime;
+                    }
+
+                    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                        this.darkMode = true;
+                        document.body.classList.add('dark');
+                    }
+
+                    document.addEventListener('click', (e) => {
+                        const wrapper = document.getElementById('searchWrapper');
+                        if (wrapper && !wrapper.contains(e.target)) {
+                            this.showAutocomplete = false;
+                        }
+                    });
+                }
+            });
+
+        })();
+    </script>
+</body>
+</html>
