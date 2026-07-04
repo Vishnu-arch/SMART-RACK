@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes">
@@ -37,7 +38,7 @@
             flex-wrap: wrap;
             align-items: center;
             justify-content: space-between;
-            margin-bottom: 2rem;
+            margin-bottom: 1.5rem;
             gap: 1rem;
         }
 
@@ -201,7 +202,7 @@
             background: #2563eb;
             transform: scale(1.02);
         }
-        
+
         .btn-primary:disabled {
             background: #94a3b8;
             cursor: not-allowed;
@@ -252,6 +253,25 @@
             transform: scale(1.05);
         }
 
+        /* Layout Structure */
+        .main-layout {
+            display: flex;
+            gap: 1.8rem;
+            align-items: flex-start;
+            margin-top: 0.5rem;
+        }
+
+        .rack-pane {
+            flex: 0 0 450px;
+            position: sticky;
+            top: 1.5rem;
+        }
+
+        .inv-pane {
+            flex: 1;
+            min-width: 0;
+        }
+
         /* rack map */
         .rack-section {
             background: white;
@@ -259,7 +279,6 @@
             padding: 1.5rem 1rem;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02);
             border: 1px solid #e9edf2;
-            margin-bottom: 2rem;
             transition: 0.2s;
         }
 
@@ -304,9 +323,7 @@
         .rack-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
-            gap: 12px;
-            max-width: 600px;
-            margin: 0 auto;
+            gap: 10px;
         }
 
         .rack-cell {
@@ -363,7 +380,7 @@
             height: 14px;
             border-radius: 50%;
             background: #cbd5e1;
-            margin-bottom: 6px;
+            margin-bottom: 4px;
             transition: 0.2s;
             box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
         }
@@ -383,7 +400,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin: 1.5rem 0 1rem;
+            margin-bottom: 1rem;
             flex-wrap: wrap;
             gap: 0.8rem;
         }
@@ -418,7 +435,7 @@
         /* items grid */
         .items-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
             gap: 1.2rem;
         }
 
@@ -659,21 +676,36 @@
             color: #94a3b8;
         }
 
-        /* responsive */
+        /* responsive layout collapse */
+        @media (max-width: 1024px) {
+            .main-layout {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .rack-pane {
+                flex: none;
+                position: static;
+            }
+
+            .items-grid {
+                grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            }
+        }
+
         @media (max-width: 640px) {
             .dashboard-header h1 {
                 font-size: 1.4rem;
             }
+
             .search-wrapper input {
                 width: 120px;
             }
-            .rack-grid {
-                max-width: 100%;
-                gap: 8px;
-            }
+
             .items-grid {
                 grid-template-columns: 1fr;
             }
+
             .modal {
                 padding: 1.5rem;
             }
@@ -682,18 +714,22 @@
         .autocomplete-list::-webkit-scrollbar {
             width: 4px;
         }
+
         .autocomplete-list::-webkit-scrollbar-track {
             background: transparent;
         }
+
         .autocomplete-list::-webkit-scrollbar-thumb {
             background: #cbd5e1;
             border-radius: 10px;
         }
+
         body.dark .autocomplete-list::-webkit-scrollbar-thumb {
             background: #475569;
         }
     </style>
 </head>
+
 <body>
     <div class="container" id="app">
         <div class="toast-message" id="toast"></div>
@@ -706,7 +742,8 @@
                     <label>Google Apps Script Web App URL</label>
                     <input v-model="tempScriptUrl" placeholder="https://script.google.com/macros/s/.../exec">
                     <p style="font-size: 0.72rem; color: #64748b; margin-top: 6px;">
-                        Paste the Web App URL generated from Deploying your Google Apps Script. This URL is saved locally in your browser storage.
+                        Paste the Web App URL generated from Deploying your Google Apps Script. This URL is saved
+                        locally in your browser storage.
                     </p>
                 </div>
                 <div class="modal-actions">
@@ -719,7 +756,7 @@
         <!-- header -->
         <header class="dashboard-header">
             <div>
-                <h1><i class="fas fa-cubes"></i>SMART RACK</h1>
+                <h1><i class="fas fa-cubes"></i>NOSH SMART RACK</h1>
                 <div class="sync-info" style="margin-top: 4px;" v-if="lastSynced">
                     <i class="fas fa-clock"></i> Last Synced: <span>{{ lastSynced }}</span>
                 </div>
@@ -727,13 +764,18 @@
             <div class="header-actions">
                 <div class="search-wrapper" id="searchWrapper">
                     <i class="fas fa-search"></i>
-                    <input type="text" id="searchInput" placeholder="Search BOM..." @input="onSearchInput" @focus="onSearchFocus" @blur="onSearchBlur" @keydown="onSearchKeydown" aria-label="Search inventory" autocomplete="off">
-                    <div class="autocomplete-list" id="autocompleteList" :class="{ show: showAutocomplete && suggestions.length > 0 }">
-                        <div v-for="(item, idx) in suggestions" :key="item.id" class="autocomplete-item" @mousedown="selectSuggestion(item)">
+                    <input type="text" id="searchInput" placeholder="Search BOM..." @input="onSearchInput"
+                        @focus="onSearchFocus" @blur="onSearchBlur" @keydown="onSearchKeydown"
+                        aria-label="Search inventory" autocomplete="off">
+                    <div class="autocomplete-list" id="autocompleteList"
+                        :class="{ show: showAutocomplete && suggestions.length > 0 }">
+                        <div v-for="(item, idx) in suggestions" :key="item.id" class="autocomplete-item"
+                            @mousedown="selectSuggestion(item)">
                             <i class="fas fa-cube" style="opacity:0.5; font-size:0.7rem;"></i>
                             <span v-html="highlightMatch(item.name)"></span>
                             <span class="item-cat">{{ item.category }}</span>
-                            <span style="font-size:0.7rem; opacity:0.6; margin-left:4px;">R{{ item.row }}C{{ item.col }}</span>
+                            <span style="font-size:0.7rem; opacity:0.6; margin-left:4px;">R{{ item.row }}C{{ item.col
+                                }}</span>
                         </div>
                     </div>
                 </div>
@@ -743,68 +785,83 @@
                 <button class="icon-btn" @click="openSettings" title="Settings">
                     <i class="fas fa-cog"></i>
                 </button>
-                <button class="icon-btn" :class="{ 'toggle-active': darkMode }" @click="toggleDark" aria-label="Toggle dark mode">
+                <button class="icon-btn" :class="{ 'toggle-active': darkMode }" @click="toggleDark"
+                    aria-label="Toggle dark mode">
                     <i class="fas fa-moon"></i>
                 </button>
             </div>
         </header>
 
-        <!-- Rack map -->
-        <section class="rack-section">
-            <div class="rack-title">
-                <h2><i class="fas fa-th"></i> Storage Rack · 10×3 Map</h2>
-                <span class="mirror-badge"><i class="fas fa-cloud"></i> Google Sheets Mirror</span>
-            </div>
-            <div class="rack-grid" id="rackGrid">
-                <div v-for="(cell, idx) in rackCells" :key="idx" class="rack-cell" :class="{ active: cell.active }" :data-row="cell.row" :data-col="cell.col">
-                    <div class="led-indicator"></div>
-                    <span>R{{ cell.row }}C{{ cell.col }}</span>
-                    <span class="bin-label" v-if="cell.itemName" :title="cell.itemName">{{ cell.itemName }}</span>
-                </div>
-            </div>
-        </section>
+        <!-- Side-by-Side Main Layout -->
+        <div class="main-layout">
 
-        <!-- inventory -->
-        <div class="inventory-header">
-            <h2><i class="fas fa-boxes"></i> Inventory BOM List</h2>
-            <div class="inventory-actions">
-                <span class="filter-badge" id="itemCount">{{ filteredItems.length }} items</span>
+            <!-- Left Side: Rack Map Pane -->
+            <div class="rack-pane">
+                <section class="rack-section">
+                    <div class="rack-title">
+                        <h2><i class="fas fa-th"></i> Storage Rack · 10×3 Map</h2>
+                        <span class="mirror-badge"><i class="fas fa-cloud"></i> Google Sheets Mirror</span>
+                    </div>
+                    <div class="rack-grid" id="rackGrid">
+                        <div v-for="(cell, idx) in rackCells" :key="idx" class="rack-cell"
+                            :class="{ active: cell.active }" :data-row="cell.row" :data-col="cell.col">
+                            <div class="led-indicator"></div>
+                            <span>R{{ cell.row }}C{{ cell.col }}</span>
+                            <span class="bin-label" v-if="cell.itemName" :title="cell.itemName">{{ cell.itemName
+                                }}</span>
+                        </div>
+                    </div>
+                </section>
             </div>
-        </div>
 
-        <div class="items-grid" id="itemsGrid">
-            <div v-for="item in filteredItems" :key="item.id" class="item-card">
-                <div class="item-name">
-                    {{ item.name }}
-                    <span class="item-category">{{ item.category || 'Uncategorized' }}</span>
+            <!-- Right Side: Inventory Items List Pane -->
+            <div class="inv-pane">
+                <div class="inventory-header">
+                    <h2><i class="fas fa-boxes"></i> Inventory BOM List</h2>
+                    <div class="inventory-actions">
+                        <span class="filter-badge" id="itemCount">{{ filteredItems.length }} items</span>
+                    </div>
                 </div>
-                <div class="item-details">
-                    <span><i class="fas fa-hashtag"></i> Qty: {{ item.quantity }}</span>
-                    <span><i class="fas fa-map-pin"></i> R{{ item.row }}C{{ item.col }}</span>
-                    <span v-if="item.quantity < 5" class="low-stock"><i class="fas fa-exclamation-triangle"></i> low</span>
-                </div>
-                <div class="card-actions">
-                    <button class="btn-locate" :class="{ active: item.highlighted }" @click="locateItem(item)">
-                        <i class="fas" :class="item.highlighted ? 'fa-eye' : 'fa-lightbulb'"></i> {{ item.highlighted ? 'Located' : 'Highlight Slot' }}
-                    </button>
+
+                <div class="items-grid" id="itemsGrid">
+                    <div v-for="item in filteredItems" :key="item.id" class="item-card">
+                        <div class="item-name">
+                            {{ item.name }}
+                            <span class="item-category">{{ item.category || 'Uncategorized' }}</span>
+                        </div>
+                        <div class="item-details">
+                            <span><i class="fas fa-hashtag"></i> Qty: {{ item.quantity }}</span>
+                            <span><i class="fas fa-map-pin"></i> R{{ item.row }}C{{ item.col }}</span>
+                            <span v-if="item.quantity < 5" class="low-stock"><i class="fas fa-exclamation-triangle"></i>
+                                low</span>
+                        </div>
+                        <div class="card-actions">
+                            <button class="btn-locate" :class="{ active: item.highlighted }" @click="locateItem(item)">
+                                <i class="fas" :class="item.highlighted ? 'fa-eye' : 'fa-lightbulb'"></i> {{
+                                item.highlighted ? 'Located' : 'Highlight Slot' }}
+                            </button>
+                        </div>
+                    </div>
+                    <div v-if="filteredItems.length === 0" class="no-results">
+                        <i class="fas fa-search" style="font-size:2rem; opacity:0.3;"></i>
+                        <p v-if="items.length > 0">No matching items found</p>
+                        <div v-else>
+                            <p>No inventory loaded yet.</p>
+                            <p style="font-size: 0.85rem; margin-top: 4px; opacity: 0.8;">
+                                Click the <i class="fas fa-cog"></i> settings icon to configure your Google Web App URL,
+                                then click the <i class="fas fa-sync"></i> sync button to pull the latest BOM.
+                            </p>
+                        </div>
+                    </div>
                 </div>
             </div>
-            <div v-if="filteredItems.length === 0" class="no-results">
-                <i class="fas fa-search" style="font-size:2rem; opacity:0.3;"></i>
-                <p v-if="items.length > 0">No matching items found</p>
-                <div v-else>
-                    <p>No inventory loaded yet.</p>
-                    <p style="font-size: 0.85rem; margin-top: 4px; opacity: 0.8;">
-                        Click the <i class="fas fa-cog"></i> settings icon to configure your Google Web App URL, then click the <i class="fas fa-sync"></i> sync button to pull the latest BOM.
-                    </p>
-                </div>
-            </div>
+
         </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
     <script>
-        (function() {
+        (function () {
             new Vue({
                 el: '#app',
                 data: {
@@ -816,7 +873,7 @@
                     showAutocomplete: false,
                     suggestions: [],
                     selectedSuggestionIndex: -1,
-                    
+
                     // Sync Configuration Settings
                     showSettingsModal: false,
                     googleScriptUrl: '',
@@ -880,10 +937,10 @@
                             this.openSettings();
                             return;
                         }
-                        
+
                         this.loading = true;
                         this.showToast('🔄 Fetching inventory from Google Sheets...');
-                        
+
                         fetch(this.googleScriptUrl)
                             .then(res => {
                                 if (!res.ok) throw new Error('Google Sheets API server error');
@@ -902,12 +959,12 @@
                                     subBox: Number(item.slotnum || item.subbox || item.subBox || 1),
                                     highlighted: false
                                 }));
-                                
+
                                 const timeStr = new Date().toLocaleString();
                                 this.lastSynced = timeStr;
                                 localStorage.setItem('last_synced_bom_time', timeStr);
                                 localStorage.setItem('cached_bom_items', JSON.stringify(this.items));
-                                
+
                                 this.updateRackCells();
                                 this.loading = false;
                                 this.showToast(`✅ Successfully synced ${this.items.length} items!`);
@@ -1066,16 +1123,22 @@
                 mounted() {
                     // Load script URL from local storage
                     const storedUrl = localStorage.getItem('google_sheets_apps_script_url');
-                    if (storedUrl) {
+                    if (storedUrl && storedUrl.trim().startsWith('http')) {
                         this.googleScriptUrl = storedUrl;
+                    } else {
+                        // Default script URL from user configuration
+                        this.googleScriptUrl = 'https://script.google.com/a/macros/euphotic.io/s/AKfycbx5ThwS5c4_pBSocc0TUJWiPAgoQv0nGwB11OkD-PwcGPrCyDMZyzLKE4XORYNtrpWouw/exec';
                     }
-                    
+
                     // Load cached BOM list to show immediately on page load
                     const cachedItems = localStorage.getItem('cached_bom_items');
                     const cachedTime = localStorage.getItem('last_synced_bom_time');
                     if (cachedItems) {
                         this.items = JSON.parse(cachedItems);
                         this.updateRackCells();
+                    } else if (this.googleScriptUrl) {
+                        // Auto-fetch from Google Sheets on first load if no cache is present
+                        this.fetchFromGoogle();
                     }
                     if (cachedTime) {
                         this.lastSynced = cachedTime;
@@ -1098,4 +1161,5 @@
         })();
     </script>
 </body>
+
 </html>
